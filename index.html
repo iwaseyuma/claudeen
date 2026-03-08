@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#4a90d9">
+<link rel="manifest" href="/manifest.json">
+<title>英語フレーズ練習</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: #f0f2f5;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    color: #1a1a2e;
+  }
+  header {
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    padding: 12px 0 8px;
+  }
+  header h1 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+  }
+  .stats {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+  .card-area {
+    width: 100%;
+    max-width: 480px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .box:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .ja-box {
+    border-left: 5px solid #4a90d9;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+  }
+  .ja-box .text {
+    font-size: 18px;
+    line-height: 1.6;
+    font-weight: 500;
+  }
+  .hint-box {
+    border-left: 5px solid #f5a623;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+  }
+  .hint-box .label {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 4px;
+  }
+  .hint-box .text {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #555;
+  }
+  .hint-box.disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .en-box {
+    border-left: 5px solid #27ae60;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+  }
+  .en-box .text {
+    font-size: 18px;
+    line-height: 1.6;
+    font-weight: 500;
+    color: #27ae60;
+  }
+  .speak-btn {
+    background: #e8f4e8;
+    color: #27ae60;
+    border: 2px solid #27ae60;
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s, transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    animation: fadeIn 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .speak-btn:active {
+    background: #c8e6c9;
+    transform: scale(0.97);
+  }
+  .memorized-btn {
+    background: #4a90d9;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s, transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    animation: fadeIn 0.3s ease;
+  }
+  .memorized-btn:active {
+    background: #357abd;
+    transform: scale(0.97);
+  }
+  .memorized-btn.done {
+    background: #95c47a;
+    pointer-events: none;
+  }
+  .next-hint {
+    text-align: center;
+    font-size: 12px;
+    color: #bbb;
+    margin-top: 4px;
+    animation: fadeIn 0.3s ease;
+  }
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 20px;
+    font-size: 14px;
+    z-index: 9999;
+    animation: toastFade 1.5s ease forwards;
+    pointer-events: none;
+  }
+  @keyframes toastFade {
+    0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .translate-section {
+    width: 100%;
+    max-width: 480px;
+    margin-top: 24px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .translate-section h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 12px;
+  }
+  .translate-input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 16px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  .translate-input:focus {
+    border-color: #4a90d9;
+  }
+  .translate-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    background: #8e44ad;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .translate-btn:active {
+    background: #7d3c98;
+    transform: scale(0.97);
+  }
+  .translate-btn:disabled {
+    background: #ccc;
+    cursor: default;
+  }
+  .translate-result {
+    margin-top: 16px;
+    display: none;
+  }
+  .translate-result.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+  .result-translation {
+    background: #f0e6f6;
+    border-left: 5px solid #8e44ad;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .result-translation .label {
+    font-size: 12px;
+    color: #8e44ad;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .result-translation .text {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+  }
+  .result-example {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .result-example:active {
+    background: #e8f4e8;
+  }
+  .result-example .en {
+    font-size: 15px;
+    color: #27ae60;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  .result-example .ja {
+    font-size: 14px;
+    color: #666;
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+  .loading-spinner {
+    text-align: center;
+    padding: 20px;
+    color: #8e44ad;
+    font-size: 14px;
+  }
+  .reset-area {
+    width: 100%;
+    max-width: 480px;
+    margin-top: 24px;
+    padding-bottom: 24px;
+    text-align: center;
+  }
+  .reset-btn {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-size: 13px;
+    color: #999;
+    cursor: pointer;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>英語フレーズ練習</h1>
+  <div class="stats" id="stats"></div>
+</header>
+
+<div class="card-area" id="cardArea"></div>
+
+<div class="translate-section">
+  <h2>翻訳と例文</h2>
+  <input type="text" class="translate-input" id="translateInput" placeholder="英語の表現や単語を入力" onkeydown="onTranslateKeydown(event)">
+  <button class="translate-btn" id="translateBtn" onclick="onTranslate()">翻訳と例文</button>
+  <div class="translate-result" id="translateResult"></div>
+</div>
+
+<div class="reset-area">
+  <button class="reset-btn" onclick="resetMemorized()">覚えた記録をリセット</button>
+</div>
+
+<script>
+const DATA = [{"ja":"両方ちょっと","en":"A bit of both."},{"ja":"～しない？","en":"Wanna ～?"},{"ja":"～はどう？","en":"How about ～?"},{"ja":"〇〇様ですね","en":"Mr./Ms. 〇〇, correct?"},{"ja":"Booking.comでのご予約、確認できました","en":"I have confirmed your reservation via Booking.com."},{"ja":"Booking.comで予約しました","en":"I made a reservation through Booking.com."},{"ja":"ああ、それわかります","en":"I understand that."},{"ja":"ああ、バウハウスか","en":"Oh, Bauhaus."},{"ja":"ああ、ブランデンブルク門ですね","en":"Ah, that's the Brandenburg Gate."},{"ja":"あそこはやっぱりベルリンに来たって感じがしますよね","en":"It really makes you feel like you're in Berlin."},{"ja":"あなたは何日くらいいるんですか？","en":"How long are you staying？"},{"ja":"あなたは何日くらいいるんですか？","en":"How long are you staying？"},{"ja":"アメリカからも遠そうですね","en":"It must be far from America too."},{"ja":"アメリカからも結構遠いです","en":"It's quite far from America too."},{"ja":"ありがとうございます","en":"Thank you."},{"ja":"ありがとうございます","en":"Thank you."},{"ja":"あるよ、それが旅行かも","en":"I have that too, maybe that's why I travel."},{"ja":"いいですね、それが一番かもしれません","en":"That sounds good. That might be best."},{"ja":"いいですね、それは楽しそうです","en":"That sounds fun."},{"ja":"いいですね、それは正解です","en":"That's a great choice."},{"ja":"いいなあ","en":"Lucky you."},{"ja":"いいね","en":"Sounds good."},{"ja":"いい意味で？","en":"In a good way?"},{"ja":"いえいえ、私もすぐ忘れますよ","en":"No, no, I forget things quickly too."},{"ja":"いつから？","en":"Since when?"},{"ja":"え、ドイツいいじゃん","en":"Germany is great though."},{"ja":"えー、じゃあおれの代わりにまた追ってみてよ","en":"Then follow it for me."},{"ja":"エレベーターは右手にございます","en":"The elevator is on your right."},{"ja":"オーディオガイドはご利用になりますか？","en":"Would you like an audio guide？"},{"ja":"オーディオガイド不要、承知しました","en":"Understood, no audio guide."},{"ja":"おすすめはありますか？","en":"Do you have any recommendations？"},{"ja":"おやすみなさい","en":"Good night."},{"ja":"おれはお笑い見て漫画読んで、最近はゲームもしてるかな","en":"I watch comedy, read manga, and recently play games."},{"ja":"オンラインで物を扱っていると、実際の街や建物を見るのって、少し感覚が戻る感じがしませんか？","en":"When you deal with things online, seeing real streets and buildings feels grounding, doesn't it？"},{"ja":"お会計は3ユーロ50セントです","en":"The total is 3 euros and 50 cents."},{"ja":"お気をつけてお過ごしください","en":"Please take care."},{"ja":"お持ち帰りで","en":"To go, please."},{"ja":"お出口はあちらになります","en":"The exit is over there."},{"ja":"お土産ショップは見学後でもご利用いただけます","en":"You can visit the souvenir shop after your visit."},{"ja":"お土産は後からでも見れますか？","en":"Can I look at the souvenirs later？"},{"ja":"カードでお支払いですか？","en":"Will you pay by card？"},{"ja":"ガイドなどは不要です","en":"I don't need a guide."},{"ja":"かしこまりました","en":"Certainly."},{"ja":"かもね","en":"Maybe."},{"ja":"こちらがお部屋の鍵です","en":"Here is your room key."},{"ja":"こちらがチケットになります","en":"Here is your ticket."},{"ja":"こちらがレシートです","en":"Here is your receipt."},{"ja":"こちらこそ、そう言ってもらえてうれしいです","en":"I'm happy you said that."},{"ja":"こっちはね、なんか整えるモードかな","en":"I'm in organizing mode lately."},{"ja":"こっちはまあまあかな","en":"I'm doing okay."},{"ja":"この何日かで食べた中においしいものありました？","en":"Was there anything delicious you ate in the past few days？"},{"ja":"ごゆっくりお過ごしください","en":"Please enjoy your stay."},{"ja":"これから探索するのが楽しみです","en":"I'm looking forward to exploring."},{"ja":"これから探索するのが楽しみです","en":"I'm looking forward to exploring."},{"ja":"こんにちは","en":"Hello."},{"ja":"こんにちは","en":"Hello."},{"ja":"こんばんは","en":"Good evening."},{"ja":"ご注文はお決まりですか？","en":"Are you ready to order？"},{"ja":"ご予約のお名前をお伺いしてもよろしいでしょうか？","en":"May I have the name of your reservation？"},{"ja":"ご予約を確認いたします","en":"I will check your reservation."},{"ja":"サイズはいかがなさいますか？","en":"What size would you like？"},{"ja":"シカゴから来ました","en":"I came from Chicago."},{"ja":"シカゴも面白いですよ","en":"Chicago is interesting too."},{"ja":"すぐに確認いたします","en":"I will check immediately."},{"ja":"すごく疲れました","en":"I'm really tired."},{"ja":"すごく疲れました","en":"I'm really tired."},{"ja":"すみません、Wi-Fiがつながらないのですが","en":"Excuse me, the Wi-Fi isn't connecting."},{"ja":"すみません、この電車は遅れていますか？","en":"Excuse me, is this train delayed？"},{"ja":"すみません、チケットをなくしてしまいました","en":"Excuse me, I've lost my ticket."},{"ja":"すみません、注文したものと違うようです","en":"Excuse me, this seems different from what I ordered."},{"ja":"そういう雰囲気が好きなんですか？","en":"Do you like that kind of atmosphere？"},{"ja":"そういえば今度ワールドカップがあるけど興味ある？","en":"The World Cup is coming up, interested？"},{"ja":"そういえば今度海外旅行に行くよ","en":"By the way, I'm going on an overseas trip soon."},{"ja":"そうです、その像はクアドリガって呼ばれているんです","en":"Yes, that statue is called the Quadriga."},{"ja":"そうですね","en":"That's true."},{"ja":"そっちは？","en":"How about you？"},{"ja":"そっちはどう？","en":"How about you？"},{"ja":"そっちは最近どんな感じ？","en":"How have you been lately？"},{"ja":"それ、すごくわかります","en":"I totally understand that."},{"ja":"それそれ","en":"Exactly."},{"ja":"それでOK","en":"Works for me."},{"ja":"それで面白く解説して","en":"And explain it in a fun way."},{"ja":"それとも、まずはこの近くをゆっくり散歩する感じですか？","en":"Or will you take it easy and walk around nearby first？"},{"ja":"それともお持ち帰りですか？","en":"Or is it to go？"},{"ja":"それともただの気のせいかな","en":"Or is it just my imagination?"},{"ja":"それとも一泊する予定ですか？","en":"Or are you staying overnight？"},{"ja":"それとも何か特別な目的がありますか？","en":"Or do you have a special purpose？"},{"ja":"それとも何度か来たことがありますか？","en":"Or have you been here before？"},{"ja":"それとも現金になさいますか？","en":"Or will you pay in cash？"},{"ja":"それとも他にも見たい場所があるんですか？","en":"Or are there other places you want to see？"},{"ja":"それなら少し安心だね","en":"That's a relief."},{"ja":"それはいいですね","en":"That sounds nice."},{"ja":"それはすごいですね","en":"That's amazing."},{"ja":"それは全然無理やりじゃないね","en":"That's not forced at all."},{"ja":"それは大変ですね","en":"That sounds tough."},{"ja":"それは面白いですね","en":"That's interesting."},{"ja":"そんなに詳しくないんですが、なんとなく好きなので","en":"I don't know much about it, but I kind of like it."},{"ja":"だからこうやってヨーロッパに来ると、建物や街を歩くだけでもすごく新鮮なんです","en":"So coming to Europe and just walking around feels very refreshing."},{"ja":"だから旅先で人と直接話すのって、ちょっと安心しますよね","en":"That's why talking to people directly while traveling feels reassuring."},{"ja":"ただ～なだけ","en":"Just ～."},{"ja":"たぶん…","en":"I guess…"},{"ja":"たぶんね","en":"I guess."},{"ja":"だよね","en":"I know, right?"},{"ja":"チェックアウトありがとうございます","en":"Thank you for checking out."},{"ja":"チェックアウトは午前11時までとなっております","en":"Check-out is until 11 a.m."},{"ja":"チェックアウトをお願いします","en":"I'd like to check out."},{"ja":"チェックインをお願いします","en":"I'd like to check in."},{"ja":"チケットは当日券でよろしいですか？","en":"Is a same-day ticket okay？"},{"ja":"チケットを入口でご提示ください","en":"Please show your ticket at the entrance."},{"ja":"ちゃんと寝てる？","en":"Are you sleeping well？"},{"ja":"ちゃんと寝てるの大事","en":"Sleeping well is important."},{"ja":"ちょうどお預かりします","en":"I'll take the exact amount."},{"ja":"デッサウ、きっといい時間になりますよ","en":"Dessau will surely be a great experience."},{"ja":"デッサウですか？","en":"Dessau？"},{"ja":"デッサウに行こうかと","en":"I was thinking of going to Dessau."},{"ja":"デッサウまで片道で","en":"One-way to Dessau, please."},{"ja":"デッサウまで片道ですね","en":"One-way to Dessau, correct?"},{"ja":"でもちょっと面白そうだね","en":"Sounds kind of fun though."},{"ja":"でもほかに行きたいところがなくて、ちょっと無理やり行き先を決めちゃった","en":"I didn't have another place in mind, so I kind of forced the decision."},{"ja":"でも最近はそこまでの熱量はないかな","en":"I don't have that level of passion now."},{"ja":"でも前より無理はしなくなったよ","en":"I don't push myself like before."},{"ja":"でも疲れてるというか体が重いよね","en":"But I feel heavy rather than tired."},{"ja":"ドイツに初めて行くよ","en":"I'm going to Germany for the first time."},{"ja":"ドイツに来たらまずビールですよね","en":"If you come to Germany, beer comes first."},{"ja":"ドイツは今回が初めてなんですが、ヨーロッパは何度か来ています","en":"This is my first time in Germany, but I've been to Europe a few times."},{"ja":"ドイツもですし、実はヨーロッパ自体初めてで","en":"Not just Germany—actually, it's my first time in Europe."},{"ja":"ドイツ料理って、もう何か食べました？","en":"Have you tried any German food yet？"},{"ja":"どうしてバウハウスに興味を持ったんですか？","en":"How did you become interested in Bauhaus？"},{"ja":"どこかおすすめの場所はありますか？","en":"Is there anywhere you recommend？"},{"ja":"どこから来たんですか？","en":"Where are you from？"},{"ja":"ところで、ベルリンではどんなことをする予定なんですか？","en":"By the way, what are you planning to do in Berlin？"},{"ja":"ところであなたはどこから来たんですか？","en":"By the way, where are you from？"},{"ja":"どこ行くの？","en":"Where are you going？"},{"ja":"どちらまで行かれますか？","en":"Where are you going？"},{"ja":"どちらも大丈夫です","en":"No, thank you."},{"ja":"とにかくビールが飲みたいですね","en":"Anyway, I really want to drink beer."},{"ja":"なにそれ、人任せじゃん","en":"What is that, leaving it to me?"},{"ja":"なるほど","en":"I see."},{"ja":"なるほどね","en":"Makes sense."},{"ja":"なんかちょっと疲れてる感じするけど","en":"You seem a little tired."},{"ja":"なんか急に回復力が落ちた感じしない？","en":"Doesn't it feel like your recovery ability suddenly dropped？"},{"ja":"なんか好きで","en":"I just like it."},{"ja":"なんだかんだで始まると見ちゃうタイプだよ","en":"I end up watching once it starts."},{"ja":"なんだか旅に来たって感じがします","en":"It really feels like being on a trip."},{"ja":"なんで？","en":"How come?"},{"ja":"はい、10分ほど遅れています","en":"Yes, it's delayed by about 10 minutes."},{"ja":"バウハウスが目的です","en":"Bauhaus is my goal."},{"ja":"バウハウスが目的ですか？","en":"Is Bauhaus your goal？"},{"ja":"バウハウスよく知ってましたね？","en":"You know Bauhaus well, don't you？"},{"ja":"パスポートはこちらです","en":"Here is my passport."},{"ja":"パスポートを確認いたしました","en":"I have checked your passport."},{"ja":"パスポートを拝見してもよろしいでしょうか？","en":"May I see your passport？"},{"ja":"パスワードは正しく入力されていますか？","en":"Have you entered the password correctly？"},{"ja":"ブラックコーヒーでお願いします","en":"Black coffee, please."},{"ja":"ブラックコーヒーですね","en":"Black coffee, correct?"},{"ja":"ベルリンで特に見てみたい場所はありますか？","en":"Is there anywhere in Berlin you especially want to see？"},{"ja":"ベルリンは初めてですか？","en":"Is this your first time in Berlin？"},{"ja":"ホームは変更ありません","en":"The platform has not changed."},{"ja":"まあいいけど","en":"Whatever."},{"ja":"まあちょっと","en":"Kinda."},{"ja":"まあまあ","en":"Pretty good."},{"ja":"まあ納得","en":"Fair enough."},{"ja":"まじで？","en":"No way!"},{"ja":"また明日、ラウンジで会いましょう","en":"See you tomorrow in the lounge."},{"ja":"また明日、感想を聞かせてください","en":"Tell me about it tomorrow."},{"ja":"むしろちゃんと芯がある感じする","en":"It actually feels grounded."},{"ja":"もちろん知っていますよ","en":"Of course I know it."},{"ja":"やっぱり街並みがきれいですね","en":"The cityscape is beautiful."},{"ja":"やば","en":"That's crazy."},{"ja":"ゆっくり休みたいです","en":"I want to rest a bit."},{"ja":"ヨーロッパ初上陸がベルリンなんて、なかなか通ですね","en":"Choosing Berlin as your first European city is quite unique."},{"ja":"リユース品の売買って、今すごく伸びている分野ですよね","en":"Resale of reused goods is really growing these days."},{"ja":"レビューやメッセージが届くと、急にリアルになりますけど","en":"But when reviews or messages arrive, it suddenly feels real."},{"ja":"わからないな","en":"I'm not sure."},{"ja":"わかる、それ","en":"I get that."},{"ja":"わかるー","en":"I know, right."},{"ja":"移動だけでほぼ一日かかりましたよ","en":"The travel alone took almost a full day."},{"ja":"一応目的はバウハウスっていう昔あった美術の学校みたいなやつ","en":"My main goal is Bauhaus, an old art school."},{"ja":"一泊するつもりです","en":"I'm planning to stay one night."},{"ja":"何かちょっとでも気分上がることある？","en":"Anything that lifts your mood？"},{"ja":"何日くらい滞在しているんですか？","en":"How many days are you staying？"},{"ja":"海外旅行？","en":"Overseas trip？"},{"ja":"街の空気を吸うだけで、頭がリセットされる感じがしますよね","en":"Just breathing the city air feels like resetting your mind."},{"ja":"確かに、ずっと画面を見ていると、急に外に出たくなります","en":"When you stare at a screen all the time, you suddenly want to go outside."},{"ja":"完全には納得してない","en":"I'm not totally convinced."},{"ja":"観光で","en":"For sightseeing."},{"ja":"観光メインですか？","en":"Is it mainly sightseeing？"},{"ja":"観光メインですか？","en":"Mainly sightseeing？"},{"ja":"逆にさ、今ちょっとでも気になってるものある？","en":"Is there anything you're even slightly curious about？"},{"ja":"空港からここまで来る間に、何か驚いたことはありましたか？","en":"Did anything surprise you on the way from the airport？"},{"ja":"元ガチ勢がゆるく復帰して勝手に語るみたいなやつでしょ","en":"Like a former hardcore fan casually coming back."},{"ja":"元気？","en":"What's up?"},{"ja":"現金でお願いします","en":"Cash, please."},{"ja":"言いたいことはわかるけど","en":"I get it, but…"},{"ja":"湖がすごく大きくて、最初は海みたいに見えるんですよ","en":"The lake is so big that it looks like the ocean at first."},{"ja":"好きなデザインを調べるとバウハウスにたどり着くことが多かったんですよね","en":"When I researched designs I liked, I often ended up at Bauhaus."},{"ja":"購入時のレシートはお持ちですか？","en":"Do you have the receipt from your purchase？"},{"ja":"高層ビルの建築とか、ジャズの文化が有名です","en":"It's famous for skyscraper architecture and jazz culture."},{"ja":"今日ついたばかりなんですよ","en":"I just arrived today."},{"ja":"今日ついたばかりなんですよ","en":"I just arrived today."},{"ja":"今日はもうゆっくり休んだほうがよさそうですね","en":"You should probably take it easy today."},{"ja":"今日は長旅でしたし、無理しないほうがいいですね","en":"It was a long journey today, so you shouldn't overdo it."},{"ja":"今日到着なんですね","en":"So you arrived today."},{"ja":"砂糖やミルクはお付けしますか？","en":"Would you like sugar or milk？"},{"ja":"最近どう？","en":"How's ～ been lately?"},{"ja":"最近どう？","en":"How have you been lately？"},{"ja":"最近なんか楽しいことある？","en":"Anything fun lately？"},{"ja":"最初の印象はどうですか？","en":"What's your first impression？"},{"ja":"仕事が忙しい？","en":"Is work busy？"},{"ja":"仕事の肩書きとか立場とか関係なく、ただ一人の旅行者として話せる感じが、少し心を軽くしてくれる気がします","en":"Talking just as travelers, without job titles or positions, makes the heart feel lighter."},{"ja":"仕事はまあまあだよ","en":"Work is so-so."},{"ja":"私はIT関係の仕事をしています","en":"I work in IT."},{"ja":"私はアメリカ出身です","en":"I'm from the United States."},{"ja":"私はニューヨーク経由で来ました","en":"I came via New York."},{"ja":"私はもう三日目で、あと二日滞在する予定です","en":"This is my third day, and I'll stay two more days."},{"ja":"私も","en":"Me neither."},{"ja":"私もこの旅行中はたくさんの種類のビールを飲みたいと思っています","en":"I also want to try many kinds of beer during this trip."},{"ja":"私も詳しくないのですが、なんとなくデザインが好きで","en":"I'm not very knowledgeable either, but I just kind of like design."},{"ja":"時差もありますし","en":"Especially with jet lag."},{"ja":"次の電車は10時15分発です","en":"The next train departs at 10:15."},{"ja":"実はナポレオン・ボナパルトが一度パリに持ち帰ったけど、その後ベルリンに戻されたらしいですよ","en":"Actually, Napoleon Bonaparte once took it to Paris, but it was later returned to Berlin."},{"ja":"実はヨーロッパ自体初めてで","en":"Actually, it's my first time in Europe."},{"ja":"実は私も少し興味があって、いつか行ってみたいと思っているんです","en":"Actually, I'm interested in it too and want to visit someday."},{"ja":"主に小さな会社向けにシステムを作ったり、改善したりする仕事です","en":"I mainly build and improve systems for small companies."},{"ja":"初めてです","en":"It's my first time."},{"ja":"初めてです","en":"It's my first time."},{"ja":"所要時間は約1時間半です","en":"It takes about one and a half hours."},{"ja":"小・中・大があります","en":"We have small, medium, and large."},{"ja":"乗り継ぎですよ","en":"I had a transfer."},{"ja":"乗り継ぎは本当に疲れますよね","en":"Transfers are really exhausting."},{"ja":"寝てるよ、薬飲んでるけど","en":"I'm sleeping, though I'm taking medication."},{"ja":"申し訳ございません","en":"I'm very sorry."},{"ja":"申し訳ございません","en":"I'm very sorry."},{"ja":"数字やデータばかり見ていると、相手が実在している感じが薄れますよね","en":"When you only look at numbers and data, the sense of real people fades."},{"ja":"正直言うと","en":"Honestly, ～"},{"ja":"前は追ってたんだけど、最近は微妙かな","en":"I used to follow it, but not so much lately."},{"ja":"他にご注文はございますか？","en":"Would you like anything else？"},{"ja":"大人一名でお願いします","en":"One adult, please."},{"ja":"大人一名ですね","en":"One adult, correct?"},{"ja":"大変な日だった？","en":"Rough day?"},{"ja":"大変失礼いたしました","en":"We sincerely apologize."},{"ja":"暖房の設定をご確認いただけますか？","en":"Could you please check the heating settings？"},{"ja":"中サイズですね","en":"Medium size, correct?"},{"ja":"中で","en":"Medium, please."},{"ja":"朝食はご利用になりますか？","en":"Would you like breakfast？"},{"ja":"朝食は不要です","en":"I don't need breakfast."},{"ja":"直行便でしたか？","en":"Was it a direct flight？"},{"ja":"店内でお召し上がりですか？","en":"Is it for here？"},{"ja":"特にここってなくても、案外そういう旅のほうが面白かったりするよ","en":"Trips without a fixed highlight can be interesting."},{"ja":"日帰りですか？","en":"Is it a day trip？"},{"ja":"日本からだとかなり長旅ですよね？","en":"It's quite a long trip from Japan, right？"},{"ja":"年齢かな","en":"Maybe it's age."},{"ja":"普段はパソコンの前にいることが多いですね","en":"I usually spend a lot of time in front of a computer."},{"ja":"部屋が少し寒いのですが","en":"The room is a bit cold."},{"ja":"別に","en":"Not much."},{"ja":"本気？","en":"Seriously?"},{"ja":"本日のおすすめはアップルケーキとカプチーノです","en":"Today's recommendation is apple cake and cappuccino."},{"ja":"無理に頑張るより、生活リズムを安定させるほうに意識が向いてる","en":"I focus more on stabilizing my routine."},{"ja":"無理やり決めたって言うけど、なんか縁があったんじゃない？","en":"You say forced, but maybe it's fate."},{"ja":"名前は〇〇です","en":"My name is 〇〇."},{"ja":"明後日またお待ちしております","en":"We look forward to seeing you again the day after tomorrow."},{"ja":"明後日またこちらに泊まります","en":"I will stay here again the day after tomorrow."},{"ja":"明日はデッサウに行く予定です","en":"I'm planning to go to Dessau tomorrow."},{"ja":"明日はもう観光に出かける予定ですか？","en":"Are you going sightseeing tomorrow？"},{"ja":"有名ですからね","en":"It's famous."},{"ja":"理由をうまく説明できなくても好きって続いてるものって本物だよね","en":"Things you keep liking even without clear reasons are real."},{"ja":"旅先だと、なぜか少し覚えられるだけです","en":"For some reason, I remember things a bit better when traveling."},{"ja":"旅先でこうやってゆっくり話せるのって、なんだか特別ですよね","en":"It feels special to talk slowly like this while traveling."},{"ja":"良い一日をお過ごしください","en":"Have a nice day."},{"ja":"良い夢を","en":"Sweet dreams."},{"ja":"領収書は不要です","en":"I don't need a receipt."},{"ja":"領収書は不要とのこと、承知しました","en":"Understood, no receipt needed."},{"ja":"歴史って、現地で見ると急にリアルになりますよね","en":"History suddenly feels real when you see it on site."},{"ja":"歴史の象徴みたいですよね","en":"It's like a symbol of history."}];
+
+const STORAGE_KEY = 'engpractice_memorized';
+const STORAGE_KEY_REV = 'engpractice_reversed';
+// 旧データ互換: true → 1 に変換
+let memorized = loadStorage(STORAGE_KEY);
+for (const k in memorized) {
+  if (memorized[k] === true) memorized[k] = 1;
+}
+let reversed = loadStorage(STORAGE_KEY_REV);
+let currentIndex = -1;
+let hintLevel = 0;
+let answerShown = false;
+let markedThisCard = false;
+let reverseMode = false;
+let longPressTimer = null;
+let isLongPress = false;
+
+function loadStorage(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveMemorized() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(memorized));
+}
+
+function saveReversed() {
+  localStorage.setItem(STORAGE_KEY_REV, JSON.stringify(reversed));
+}
+
+
+function getMemorizedCount() {
+  return Object.values(memorized).filter(v => v >= 1).length;
+}
+
+function getExcludedFromMemorizedCount() {
+  return Object.values(memorized).filter(v => v >= 2).length;
+}
+
+function updateStats() {
+  const total = DATA.length;
+  const mem = getMemorizedCount();
+  const excl = getExcludedFromMemorizedCount();
+  let text = `全 ${total} フレーズ ／ 覚えた ${mem} フレーズ`;
+  if (excl > 0) text += ` ／ 除外 ${excl} フレーズ`;
+  document.getElementById('stats').textContent = text;
+}
+
+function pickNext() {
+  const indices = [];
+  const memorizedIndices = [];
+  for (let i = 0; i < DATA.length; i++) {
+    if (i === currentIndex) continue;
+    if ((memorized[i] || 0) >= 2) continue; // 2回以上覚えた→除外
+    if (memorized[i]) {
+      memorizedIndices.push(i);
+    } else {
+      indices.push(i);
+    }
+  }
+  if (indices.length === 0 && memorizedIndices.length === 0) {
+    return memorizedIndices.length > 0
+      ? memorizedIndices[Math.floor(Math.random() * memorizedIndices.length)]
+      : 0;
+  }
+  if (indices.length === 0) {
+    return memorizedIndices[Math.floor(Math.random() * memorizedIndices.length)];
+  }
+  if (memorizedIndices.length > 0 && Math.random() < 0.05) {
+    return memorizedIndices[Math.floor(Math.random() * memorizedIndices.length)];
+  }
+  return indices[Math.floor(Math.random() * indices.length)];
+}
+
+function getHintWords(text, level) {
+  const words = text.split(/\s+/);
+  if (level === 0) return null;
+  const count = Math.ceil(words.length * level / 3);
+  return words.slice(0, count).join(' ') + ' …';
+}
+
+function render() {
+  const area = document.getElementById('cardArea');
+  const item = DATA[currentIndex];
+  const questionText = reverseMode ? item.en : item.ja;
+  const answerText = reverseMode ? item.ja : item.en;
+  const questionClass = reverseMode ? 'en-box' : 'ja-box';
+  const answerClass = reverseMode ? 'ja-box' : 'en-box';
+  let html = '';
+
+  // Question box (with long-press copy if English)
+  if (questionClass === 'en-box') {
+    html += `<div class="box ${questionClass}" id="enQuestion"
+      ontouchstart="onEnTouchStart(event)" ontouchend="onEnTouchEnd(event)" ontouchcancel="onEnTouchEnd(event)"
+      onmousedown="onEnTouchStart(event)" onmouseup="onEnTouchEnd(event)">
+      <div class="text">${escapeHtml(questionText)}</div>
+    </div>`;
+  } else {
+    html += `<div class="box ${questionClass}" onclick="onQuestionClick()">
+      <div class="text">${escapeHtml(questionText)}</div>
+    </div>`;
+  }
+
+  // Speak button (always visible)
+  html += `<button class="speak-btn" onclick="onSpeak(event)">&#x1f50a; 英語を発音する</button>`;
+
+  // Hint box
+  if (!answerShown) {
+    const disabled = hintLevel >= 2;
+    const hintText = hintLevel > 0 ? getHintWords(answerText, hintLevel) : 'タップしてヒントを表示';
+    html += `<div class="box hint-box${disabled ? ' disabled' : ''}" onclick="${disabled ? '' : 'onHintClick()'}">
+      <div>
+        <div class="label">ヒント</div>
+        <div class="text">${hintLevel > 0 ? escapeHtml(hintText) : '<span style="color:#bbb">タップしてヒントを表示</span>'}</div>
+      </div>
+    </div>`;
+  }
+
+  // Answer box (with long-press copy for English text)
+  if (answerShown) {
+    const enText = escapeHtml(item.en);
+    if (answerClass === 'en-box') {
+      html += `<div class="box ${answerClass}" id="enAnswer"
+        ontouchstart="onEnTouchStart(event)" ontouchend="onEnTouchEnd(event)" ontouchcancel="onEnTouchEnd(event)"
+        onmousedown="onEnTouchStart(event)" onmouseup="onEnTouchEnd(event)">
+        <div class="text">${escapeHtml(answerText)}</div>
+      </div>`;
+    } else {
+      html += `<div class="box ${answerClass}" onclick="onAnswerClick()">
+        <div class="text">${escapeHtml(answerText)}</div>
+      </div>`;
+    }
+
+    // If question is English (reverseMode), add long-press to question too
+    // Actually we handle English box specifically via id
+
+    // Next button
+    html += `<button class="memorized-btn" style="background:#555" onclick="onNext(event)">次の問題へ進む</button>`;
+
+    // Memorized button (2回目以降は除外される)
+    const memCount = memorized[currentIndex] || 0;
+    if (!markedThisCard) {
+      const label = memCount === 0 ? '完全に覚えた' : '完全に覚えた（もう1回押すと非表示）';
+      html += `<button class="memorized-btn" onclick="onMemorized(event)">${label}</button>`;
+    } else {
+      html += `<button class="memorized-btn done">覚えた！</button>`;
+    }
+
+    // Reverse toggle button
+    if (!reverseMode) {
+      if (!reversed[currentIndex]) {
+        html += `<button class="memorized-btn" style="background:#e67e22" onclick="onReverse(event)">次回から英語で出題</button>`;
+      } else {
+        html += `<button class="memorized-btn done" style="background:#f0c27a;color:#333">英語出題に設定済み</button>`;
+      }
+    } else {
+      if (reversed[currentIndex]) {
+        html += `<button class="memorized-btn" style="background:#e67e22" onclick="onUnreverse(event)">次回から日本語で出題に戻す</button>`;
+      }
+    }
+
+    html += `<div class="next-hint">問題または答えをタップで次へ ／ 英語を長押しでコピー</div>`;
+  }
+
+  area.innerHTML = html;
+  updateStats();
+}
+
+function onQuestionClick() {
+  if (answerShown) {
+    goNext();
+  } else {
+    answerShown = true;
+    render();
+  }
+}
+
+function onAnswerClick() {
+  if (answerShown) {
+    goNext();
+  }
+}
+
+function onHintClick() {
+  if (hintLevel < 2) {
+    hintLevel++;
+    render();
+  }
+}
+
+function onSpeak(e) {
+  e.stopPropagation();
+  const item = DATA[currentIndex];
+  const utterance = new SpeechSynthesisUtterance(item.en);
+  utterance.lang = 'en-US';
+  utterance.rate = 0.9;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
+}
+
+function onNext(e) {
+  e.stopPropagation();
+  goNext();
+}
+
+function onMemorized(e) {
+  e.stopPropagation();
+  memorized[currentIndex] = (memorized[currentIndex] || 0) + 1;
+  saveMemorized();
+  markedThisCard = true;
+  if (memorized[currentIndex] >= 2) {
+    showToast('このフレーズを除外しました');
+    goNext();
+  } else {
+    render();
+  }
+}
+
+function onReverse(e) {
+  e.stopPropagation();
+  reversed[currentIndex] = true;
+  saveReversed();
+  render();
+}
+
+function onUnreverse(e) {
+  e.stopPropagation();
+  delete reversed[currentIndex];
+  saveReversed();
+  render();
+}
+
+// Long-press copy for English text
+function onEnTouchStart(e) {
+  isLongPress = false;
+  longPressTimer = setTimeout(() => {
+    isLongPress = true;
+    const item = DATA[currentIndex];
+    navigator.clipboard.writeText(item.en).then(() => {
+      showToast('コピーしました');
+    }).catch(() => {
+      // Fallback for older browsers
+      const ta = document.createElement('textarea');
+      ta.value = item.en;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('コピーしました');
+    });
+  }, 500);
+}
+
+function onEnTouchEnd(e) {
+  clearTimeout(longPressTimer);
+  if (isLongPress) {
+    e.preventDefault();
+    isLongPress = false;
+    return;
+  }
+  // Normal tap → behave like click
+  if (answerShown) {
+    goNext();
+  } else {
+    answerShown = true;
+    render();
+  }
+}
+
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1500);
+}
+
+function speakText(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  utterance.rate = 0.9;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
+}
+
+function onTranslateKeydown(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    onTranslate();
+  }
+}
+
+// Translate & examples
+async function onTranslate() {
+  const input = document.getElementById('translateInput');
+  const btn = document.getElementById('translateBtn');
+  const resultDiv = document.getElementById('translateResult');
+  const text = input.value.trim();
+  if (!text) return;
+
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+  resultDiv.className = 'translate-result';
+  resultDiv.innerHTML = '<div class="loading-spinner">AIが生成中です（最大30秒ほどかかる場合があります）...</div>';
+  resultDiv.className = 'translate-result show';
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000);
+    const apiUrl = window.location.origin + '/api/translate';
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+    const data = await res.json();
+
+    if (data.error) {
+      resultDiv.innerHTML = `<div style="color:#e74c3c;padding:12px">${escapeHtml(data.error)}</div>`;
+    } else {
+      let html = '';
+
+      if (data.offline) {
+        html += `<div style="background:#e8f4fd;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:#1a5276">✈ オフライン中のため翻訳機能は使えません。</div>`;
+      } else if (data.fallback) {
+        html += `<div style="background:#fff3cd;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:#856404">⚠ AI（Gemini）が利用できないため表示できません。しばらく待ってから再度お試しください。</div>`;
+      }
+
+      // 日本語訳（複数表示）
+      const translations = data.translations || (data.translation ? [data.translation] : []);
+      if (translations.length > 0) {
+        html += `<div class="result-translation">
+          <div class="label">日本語訳</div>
+          <div class="text">${translations.map(t => '・' + escapeHtml(t)).join('<br>')}</div>
+        </div>`;
+      }
+
+      // 例文
+      if (data.examples && data.examples.length > 0) {
+        html += `<div style="font-size:13px;color:#888;margin-bottom:8px;font-weight:600">例文</div>`;
+        data.examples.forEach((ex) => {
+          html += `<div class="result-example" onclick="speakText('${escapeHtml(ex.en || '').replace(/'/g, "\\'")}')">
+            <div class="en">&#x1f50a; ${escapeHtml(ex.en || '')}</div>
+            <div class="ja">${escapeHtml(ex.ja || '')}</div>
+          </div>`;
+        });
+      }
+
+      resultDiv.innerHTML = html;
+    }
+  } catch (err) {
+    const msg = err.name === 'AbortError' ? 'タイムアウトしました。' : 'サーバーに接続できません。';
+    resultDiv.innerHTML = `<div style="color:#e74c3c;padding:12px">${msg}もう一度お試しください。</div>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '翻訳と例文';
+}
+
+function goNext() {
+  currentIndex = pickNext();
+  hintLevel = 0;
+  answerShown = false;
+  markedThisCard = false;
+  reverseMode = !!reversed[currentIndex];
+  render();
+}
+
+function resetMemorized() {
+  if (confirm('覚えた記録・除外記録をすべてリセットしますか？')) {
+    memorized = {};
+    reversed = {};
+    saveMemorized();
+    saveReversed();
+    updateStats();
+  }
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// Start
+goNext();
+
+// Service Worker 登録（オフライン対応）
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
