@@ -278,6 +278,69 @@
     color: #8e44ad;
     font-size: 14px;
   }
+  .import-section {
+    width: 100%;
+    max-width: 480px;
+    margin-top: 24px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .import-section h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 12px;
+  }
+  .import-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    background: #2980b9;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .import-btn:active {
+    background: #1f6d9e;
+    transform: scale(0.97);
+  }
+  .import-desc {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #888;
+    line-height: 1.7;
+  }
+  .import-desc code {
+    background: #f0f2f5;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+  .import-result {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    display: none;
+  }
+  .import-result.success {
+    display: block;
+    background: #e8f8e8;
+    color: #27ae60;
+    animation: fadeIn 0.3s ease;
+  }
+  .import-result.error {
+    display: block;
+    background: #fde8e8;
+    color: #e74c3c;
+    animation: fadeIn 0.3s ease;
+  }
   .reset-area {
     width: 100%;
     max-width: 480px;
@@ -316,10 +379,29 @@
   <div class="translate-result" id="translateResult"></div>
 </div>
 
+<div class="import-section">
+  <h2>フレーズ読み込み</h2>
+  <input type="file" id="importFile" accept=".xlsx,.xls,.tsv,.txt,.csv" style="display:none" onchange="onImportFile(event)">
+  <button class="import-btn" onclick="document.getElementById('importFile').click()">ファイルを選択して読み込む</button>
+  <div id="importResult" class="import-result"></div>
+  <div class="import-desc">
+    <strong>対応形式：</strong>Excel（.xlsx / .xls）またはテキスト（.tsv / .txt / .csv）<br>
+    <strong>データ配置：</strong>1行目に英語、2行目に日本語を横方向に並べてください。<br>
+    例（Excel）：<br>
+    <code>A1: Hello</code> <code>B1: Thank you</code> <code>C1: Good morning</code> …<br>
+    <code>A2: こんにちは</code> <code>B2: ありがとう</code> <code>C2: おはよう</code> …<br>
+    例（タブ区切りテキスト）：<br>
+    <code>Hello&#9;Thank you&#9;Good morning</code>（1行目）<br>
+    <code>こんにちは&#9;ありがとう&#9;おはよう</code>（2行目）<br>
+    ※ 既存のフレーズに追加されます。重複は自動でスキップされます。
+  </div>
+</div>
+
 <div class="reset-area">
   <button class="reset-btn" onclick="resetMemorized()">覚えた記録をリセット</button>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const DATA = [{"ja":"両方ちょっと","en":"A bit of both."},{"ja":"～しない？","en":"Wanna ～?"},{"ja":"～はどう？","en":"How about ～?"},{"ja":"〇〇様ですね","en":"Mr./Ms. 〇〇, correct?"},{"ja":"Booking.comでのご予約、確認できました","en":"I have confirmed your reservation via Booking.com."},{"ja":"Booking.comで予約しました","en":"I made a reservation through Booking.com."},{"ja":"ああ、それわかります","en":"I understand that."},{"ja":"ああ、バウハウスか","en":"Oh, Bauhaus."},{"ja":"ああ、ブランデンブルク門ですね","en":"Ah, that's the Brandenburg Gate."},{"ja":"あそこはやっぱりベルリンに来たって感じがしますよね","en":"It really makes you feel like you're in Berlin."},{"ja":"あなたは何日くらいいるんですか？","en":"How long are you staying？"},{"ja":"あなたは何日くらいいるんですか？","en":"How long are you staying？"},{"ja":"アメリカからも遠そうですね","en":"It must be far from America too."},{"ja":"アメリカからも結構遠いです","en":"It's quite far from America too."},{"ja":"ありがとうございます","en":"Thank you."},{"ja":"ありがとうございます","en":"Thank you."},{"ja":"あるよ、それが旅行かも","en":"I have that too, maybe that's why I travel."},{"ja":"いいですね、それが一番かもしれません","en":"That sounds good. That might be best."},{"ja":"いいですね、それは楽しそうです","en":"That sounds fun."},{"ja":"いいですね、それは正解です","en":"That's a great choice."},{"ja":"いいなあ","en":"Lucky you."},{"ja":"いいね","en":"Sounds good."},{"ja":"いい意味で？","en":"In a good way?"},{"ja":"いえいえ、私もすぐ忘れますよ","en":"No, no, I forget things quickly too."},{"ja":"いつから？","en":"Since when?"},{"ja":"え、ドイツいいじゃん","en":"Germany is great though."},{"ja":"えー、じゃあおれの代わりにまた追ってみてよ","en":"Then follow it for me."},{"ja":"エレベーターは右手にございます","en":"The elevator is on your right."},{"ja":"オーディオガイドはご利用になりますか？","en":"Would you like an audio guide？"},{"ja":"オーディオガイド不要、承知しました","en":"Understood, no audio guide."},{"ja":"おすすめはありますか？","en":"Do you have any recommendations？"},{"ja":"おやすみなさい","en":"Good night."},{"ja":"おれはお笑い見て漫画読んで、最近はゲームもしてるかな","en":"I watch comedy, read manga, and recently play games."},{"ja":"オンラインで物を扱っていると、実際の街や建物を見るのって、少し感覚が戻る感じがしませんか？","en":"When you deal with things online, seeing real streets and buildings feels grounding, doesn't it？"},{"ja":"お会計は3ユーロ50セントです","en":"The total is 3 euros and 50 cents."},{"ja":"お気をつけてお過ごしください","en":"Please take care."},{"ja":"お持ち帰りで","en":"To go, please."},{"ja":"お出口はあちらになります","en":"The exit is over there."},{"ja":"お土産ショップは見学後でもご利用いただけます","en":"You can visit the souvenir shop after your visit."},{"ja":"お土産は後からでも見れますか？","en":"Can I look at the souvenirs later？"},{"ja":"カードでお支払いですか？","en":"Will you pay by card？"},{"ja":"ガイドなどは不要です","en":"I don't need a guide."},{"ja":"かしこまりました","en":"Certainly."},{"ja":"かもね","en":"Maybe."},{"ja":"こちらがお部屋の鍵です","en":"Here is your room key."},{"ja":"こちらがチケットになります","en":"Here is your ticket."},{"ja":"こちらがレシートです","en":"Here is your receipt."},{"ja":"こちらこそ、そう言ってもらえてうれしいです","en":"I'm happy you said that."},{"ja":"こっちはね、なんか整えるモードかな","en":"I'm in organizing mode lately."},{"ja":"こっちはまあまあかな","en":"I'm doing okay."},{"ja":"この何日かで食べた中においしいものありました？","en":"Was there anything delicious you ate in the past few days？"},{"ja":"ごゆっくりお過ごしください","en":"Please enjoy your stay."},{"ja":"これから探索するのが楽しみです","en":"I'm looking forward to exploring."},{"ja":"これから探索するのが楽しみです","en":"I'm looking forward to exploring."},{"ja":"こんにちは","en":"Hello."},{"ja":"こんにちは","en":"Hello."},{"ja":"こんばんは","en":"Good evening."},{"ja":"ご注文はお決まりですか？","en":"Are you ready to order？"},{"ja":"ご予約のお名前をお伺いしてもよろしいでしょうか？","en":"May I have the name of your reservation？"},{"ja":"ご予約を確認いたします","en":"I will check your reservation."},{"ja":"サイズはいかがなさいますか？","en":"What size would you like？"},{"ja":"シカゴから来ました","en":"I came from Chicago."},{"ja":"シカゴも面白いですよ","en":"Chicago is interesting too."},{"ja":"すぐに確認いたします","en":"I will check immediately."},{"ja":"すごく疲れました","en":"I'm really tired."},{"ja":"すごく疲れました","en":"I'm really tired."},{"ja":"すみません、Wi-Fiがつながらないのですが","en":"Excuse me, the Wi-Fi isn't connecting."},{"ja":"すみません、この電車は遅れていますか？","en":"Excuse me, is this train delayed？"},{"ja":"すみません、チケットをなくしてしまいました","en":"Excuse me, I've lost my ticket."},{"ja":"すみません、注文したものと違うようです","en":"Excuse me, this seems different from what I ordered."},{"ja":"そういう雰囲気が好きなんですか？","en":"Do you like that kind of atmosphere？"},{"ja":"そういえば今度ワールドカップがあるけど興味ある？","en":"The World Cup is coming up, interested？"},{"ja":"そういえば今度海外旅行に行くよ","en":"By the way, I'm going on an overseas trip soon."},{"ja":"そうです、その像はクアドリガって呼ばれているんです","en":"Yes, that statue is called the Quadriga."},{"ja":"そうですね","en":"That's true."},{"ja":"そっちは？","en":"How about you？"},{"ja":"そっちはどう？","en":"How about you？"},{"ja":"そっちは最近どんな感じ？","en":"How have you been lately？"},{"ja":"それ、すごくわかります","en":"I totally understand that."},{"ja":"それそれ","en":"Exactly."},{"ja":"それでOK","en":"Works for me."},{"ja":"それで面白く解説して","en":"And explain it in a fun way."},{"ja":"それとも、まずはこの近くをゆっくり散歩する感じですか？","en":"Or will you take it easy and walk around nearby first？"},{"ja":"それともお持ち帰りですか？","en":"Or is it to go？"},{"ja":"それともただの気のせいかな","en":"Or is it just my imagination?"},{"ja":"それとも一泊する予定ですか？","en":"Or are you staying overnight？"},{"ja":"それとも何か特別な目的がありますか？","en":"Or do you have a special purpose？"},{"ja":"それとも何度か来たことがありますか？","en":"Or have you been here before？"},{"ja":"それとも現金になさいますか？","en":"Or will you pay in cash？"},{"ja":"それとも他にも見たい場所があるんですか？","en":"Or are there other places you want to see？"},{"ja":"それなら少し安心だね","en":"That's a relief."},{"ja":"それはいいですね","en":"That sounds nice."},{"ja":"それはすごいですね","en":"That's amazing."},{"ja":"それは全然無理やりじゃないね","en":"That's not forced at all."},{"ja":"それは大変ですね","en":"That sounds tough."},{"ja":"それは面白いですね","en":"That's interesting."},{"ja":"そんなに詳しくないんですが、なんとなく好きなので","en":"I don't know much about it, but I kind of like it."},{"ja":"だからこうやってヨーロッパに来ると、建物や街を歩くだけでもすごく新鮮なんです","en":"So coming to Europe and just walking around feels very refreshing."},{"ja":"だから旅先で人と直接話すのって、ちょっと安心しますよね","en":"That's why talking to people directly while traveling feels reassuring."},{"ja":"ただ～なだけ","en":"Just ～."},{"ja":"たぶん…","en":"I guess…"},{"ja":"たぶんね","en":"I guess."},{"ja":"だよね","en":"I know, right?"},{"ja":"チェックアウトありがとうございます","en":"Thank you for checking out."},{"ja":"チェックアウトは午前11時までとなっております","en":"Check-out is until 11 a.m."},{"ja":"チェックアウトをお願いします","en":"I'd like to check out."},{"ja":"チェックインをお願いします","en":"I'd like to check in."},{"ja":"チケットは当日券でよろしいですか？","en":"Is a same-day ticket okay？"},{"ja":"チケットを入口でご提示ください","en":"Please show your ticket at the entrance."},{"ja":"ちゃんと寝てる？","en":"Are you sleeping well？"},{"ja":"ちゃんと寝てるの大事","en":"Sleeping well is important."},{"ja":"ちょうどお預かりします","en":"I'll take the exact amount."},{"ja":"デッサウ、きっといい時間になりますよ","en":"Dessau will surely be a great experience."},{"ja":"デッサウですか？","en":"Dessau？"},{"ja":"デッサウに行こうかと","en":"I was thinking of going to Dessau."},{"ja":"デッサウまで片道で","en":"One-way to Dessau, please."},{"ja":"デッサウまで片道ですね","en":"One-way to Dessau, correct?"},{"ja":"でもちょっと面白そうだね","en":"Sounds kind of fun though."},{"ja":"でもほかに行きたいところがなくて、ちょっと無理やり行き先を決めちゃった","en":"I didn't have another place in mind, so I kind of forced the decision."},{"ja":"でも最近はそこまでの熱量はないかな","en":"I don't have that level of passion now."},{"ja":"でも前より無理はしなくなったよ","en":"I don't push myself like before."},{"ja":"でも疲れてるというか体が重いよね","en":"But I feel heavy rather than tired."},{"ja":"ドイツに初めて行くよ","en":"I'm going to Germany for the first time."},{"ja":"ドイツに来たらまずビールですよね","en":"If you come to Germany, beer comes first."},{"ja":"ドイツは今回が初めてなんですが、ヨーロッパは何度か来ています","en":"This is my first time in Germany, but I've been to Europe a few times."},{"ja":"ドイツもですし、実はヨーロッパ自体初めてで","en":"Not just Germany—actually, it's my first time in Europe."},{"ja":"ドイツ料理って、もう何か食べました？","en":"Have you tried any German food yet？"},{"ja":"どうしてバウハウスに興味を持ったんですか？","en":"How did you become interested in Bauhaus？"},{"ja":"どこかおすすめの場所はありますか？","en":"Is there anywhere you recommend？"},{"ja":"どこから来たんですか？","en":"Where are you from？"},{"ja":"ところで、ベルリンではどんなことをする予定なんですか？","en":"By the way, what are you planning to do in Berlin？"},{"ja":"ところであなたはどこから来たんですか？","en":"By the way, where are you from？"},{"ja":"どこ行くの？","en":"Where are you going？"},{"ja":"どちらまで行かれますか？","en":"Where are you going？"},{"ja":"どちらも大丈夫です","en":"No, thank you."},{"ja":"とにかくビールが飲みたいですね","en":"Anyway, I really want to drink beer."},{"ja":"なにそれ、人任せじゃん","en":"What is that, leaving it to me?"},{"ja":"なるほど","en":"I see."},{"ja":"なるほどね","en":"Makes sense."},{"ja":"なんかちょっと疲れてる感じするけど","en":"You seem a little tired."},{"ja":"なんか急に回復力が落ちた感じしない？","en":"Doesn't it feel like your recovery ability suddenly dropped？"},{"ja":"なんか好きで","en":"I just like it."},{"ja":"なんだかんだで始まると見ちゃうタイプだよ","en":"I end up watching once it starts."},{"ja":"なんだか旅に来たって感じがします","en":"It really feels like being on a trip."},{"ja":"なんで？","en":"How come?"},{"ja":"はい、10分ほど遅れています","en":"Yes, it's delayed by about 10 minutes."},{"ja":"バウハウスが目的です","en":"Bauhaus is my goal."},{"ja":"バウハウスが目的ですか？","en":"Is Bauhaus your goal？"},{"ja":"バウハウスよく知ってましたね？","en":"You know Bauhaus well, don't you？"},{"ja":"パスポートはこちらです","en":"Here is my passport."},{"ja":"パスポートを確認いたしました","en":"I have checked your passport."},{"ja":"パスポートを拝見してもよろしいでしょうか？","en":"May I see your passport？"},{"ja":"パスワードは正しく入力されていますか？","en":"Have you entered the password correctly？"},{"ja":"ブラックコーヒーでお願いします","en":"Black coffee, please."},{"ja":"ブラックコーヒーですね","en":"Black coffee, correct?"},{"ja":"ベルリンで特に見てみたい場所はありますか？","en":"Is there anywhere in Berlin you especially want to see？"},{"ja":"ベルリンは初めてですか？","en":"Is this your first time in Berlin？"},{"ja":"ホームは変更ありません","en":"The platform has not changed."},{"ja":"まあいいけど","en":"Whatever."},{"ja":"まあちょっと","en":"Kinda."},{"ja":"まあまあ","en":"Pretty good."},{"ja":"まあ納得","en":"Fair enough."},{"ja":"まじで？","en":"No way!"},{"ja":"また明日、ラウンジで会いましょう","en":"See you tomorrow in the lounge."},{"ja":"また明日、感想を聞かせてください","en":"Tell me about it tomorrow."},{"ja":"むしろちゃんと芯がある感じする","en":"It actually feels grounded."},{"ja":"もちろん知っていますよ","en":"Of course I know it."},{"ja":"やっぱり街並みがきれいですね","en":"The cityscape is beautiful."},{"ja":"やば","en":"That's crazy."},{"ja":"ゆっくり休みたいです","en":"I want to rest a bit."},{"ja":"ヨーロッパ初上陸がベルリンなんて、なかなか通ですね","en":"Choosing Berlin as your first European city is quite unique."},{"ja":"リユース品の売買って、今すごく伸びている分野ですよね","en":"Resale of reused goods is really growing these days."},{"ja":"レビューやメッセージが届くと、急にリアルになりますけど","en":"But when reviews or messages arrive, it suddenly feels real."},{"ja":"わからないな","en":"I'm not sure."},{"ja":"わかる、それ","en":"I get that."},{"ja":"わかるー","en":"I know, right."},{"ja":"移動だけでほぼ一日かかりましたよ","en":"The travel alone took almost a full day."},{"ja":"一応目的はバウハウスっていう昔あった美術の学校みたいなやつ","en":"My main goal is Bauhaus, an old art school."},{"ja":"一泊するつもりです","en":"I'm planning to stay one night."},{"ja":"何かちょっとでも気分上がることある？","en":"Anything that lifts your mood？"},{"ja":"何日くらい滞在しているんですか？","en":"How many days are you staying？"},{"ja":"海外旅行？","en":"Overseas trip？"},{"ja":"街の空気を吸うだけで、頭がリセットされる感じがしますよね","en":"Just breathing the city air feels like resetting your mind."},{"ja":"確かに、ずっと画面を見ていると、急に外に出たくなります","en":"When you stare at a screen all the time, you suddenly want to go outside."},{"ja":"完全には納得してない","en":"I'm not totally convinced."},{"ja":"観光で","en":"For sightseeing."},{"ja":"観光メインですか？","en":"Is it mainly sightseeing？"},{"ja":"観光メインですか？","en":"Mainly sightseeing？"},{"ja":"逆にさ、今ちょっとでも気になってるものある？","en":"Is there anything you're even slightly curious about？"},{"ja":"空港からここまで来る間に、何か驚いたことはありましたか？","en":"Did anything surprise you on the way from the airport？"},{"ja":"元ガチ勢がゆるく復帰して勝手に語るみたいなやつでしょ","en":"Like a former hardcore fan casually coming back."},{"ja":"元気？","en":"What's up?"},{"ja":"現金でお願いします","en":"Cash, please."},{"ja":"言いたいことはわかるけど","en":"I get it, but…"},{"ja":"湖がすごく大きくて、最初は海みたいに見えるんですよ","en":"The lake is so big that it looks like the ocean at first."},{"ja":"好きなデザインを調べるとバウハウスにたどり着くことが多かったんですよね","en":"When I researched designs I liked, I often ended up at Bauhaus."},{"ja":"購入時のレシートはお持ちですか？","en":"Do you have the receipt from your purchase？"},{"ja":"高層ビルの建築とか、ジャズの文化が有名です","en":"It's famous for skyscraper architecture and jazz culture."},{"ja":"今日ついたばかりなんですよ","en":"I just arrived today."},{"ja":"今日ついたばかりなんですよ","en":"I just arrived today."},{"ja":"今日はもうゆっくり休んだほうがよさそうですね","en":"You should probably take it easy today."},{"ja":"今日は長旅でしたし、無理しないほうがいいですね","en":"It was a long journey today, so you shouldn't overdo it."},{"ja":"今日到着なんですね","en":"So you arrived today."},{"ja":"砂糖やミルクはお付けしますか？","en":"Would you like sugar or milk？"},{"ja":"最近どう？","en":"How's ～ been lately?"},{"ja":"最近どう？","en":"How have you been lately？"},{"ja":"最近なんか楽しいことある？","en":"Anything fun lately？"},{"ja":"最初の印象はどうですか？","en":"What's your first impression？"},{"ja":"仕事が忙しい？","en":"Is work busy？"},{"ja":"仕事の肩書きとか立場とか関係なく、ただ一人の旅行者として話せる感じが、少し心を軽くしてくれる気がします","en":"Talking just as travelers, without job titles or positions, makes the heart feel lighter."},{"ja":"仕事はまあまあだよ","en":"Work is so-so."},{"ja":"私はIT関係の仕事をしています","en":"I work in IT."},{"ja":"私はアメリカ出身です","en":"I'm from the United States."},{"ja":"私はニューヨーク経由で来ました","en":"I came via New York."},{"ja":"私はもう三日目で、あと二日滞在する予定です","en":"This is my third day, and I'll stay two more days."},{"ja":"私も","en":"Me neither."},{"ja":"私もこの旅行中はたくさんの種類のビールを飲みたいと思っています","en":"I also want to try many kinds of beer during this trip."},{"ja":"私も詳しくないのですが、なんとなくデザインが好きで","en":"I'm not very knowledgeable either, but I just kind of like design."},{"ja":"時差もありますし","en":"Especially with jet lag."},{"ja":"次の電車は10時15分発です","en":"The next train departs at 10:15."},{"ja":"実はナポレオン・ボナパルトが一度パリに持ち帰ったけど、その後ベルリンに戻されたらしいですよ","en":"Actually, Napoleon Bonaparte once took it to Paris, but it was later returned to Berlin."},{"ja":"実はヨーロッパ自体初めてで","en":"Actually, it's my first time in Europe."},{"ja":"実は私も少し興味があって、いつか行ってみたいと思っているんです","en":"Actually, I'm interested in it too and want to visit someday."},{"ja":"主に小さな会社向けにシステムを作ったり、改善したりする仕事です","en":"I mainly build and improve systems for small companies."},{"ja":"初めてです","en":"It's my first time."},{"ja":"初めてです","en":"It's my first time."},{"ja":"所要時間は約1時間半です","en":"It takes about one and a half hours."},{"ja":"小・中・大があります","en":"We have small, medium, and large."},{"ja":"乗り継ぎですよ","en":"I had a transfer."},{"ja":"乗り継ぎは本当に疲れますよね","en":"Transfers are really exhausting."},{"ja":"寝てるよ、薬飲んでるけど","en":"I'm sleeping, though I'm taking medication."},{"ja":"申し訳ございません","en":"I'm very sorry."},{"ja":"申し訳ございません","en":"I'm very sorry."},{"ja":"数字やデータばかり見ていると、相手が実在している感じが薄れますよね","en":"When you only look at numbers and data, the sense of real people fades."},{"ja":"正直言うと","en":"Honestly, ～"},{"ja":"前は追ってたんだけど、最近は微妙かな","en":"I used to follow it, but not so much lately."},{"ja":"他にご注文はございますか？","en":"Would you like anything else？"},{"ja":"大人一名でお願いします","en":"One adult, please."},{"ja":"大人一名ですね","en":"One adult, correct?"},{"ja":"大変な日だった？","en":"Rough day?"},{"ja":"大変失礼いたしました","en":"We sincerely apologize."},{"ja":"暖房の設定をご確認いただけますか？","en":"Could you please check the heating settings？"},{"ja":"中サイズですね","en":"Medium size, correct?"},{"ja":"中で","en":"Medium, please."},{"ja":"朝食はご利用になりますか？","en":"Would you like breakfast？"},{"ja":"朝食は不要です","en":"I don't need breakfast."},{"ja":"直行便でしたか？","en":"Was it a direct flight？"},{"ja":"店内でお召し上がりですか？","en":"Is it for here？"},{"ja":"特にここってなくても、案外そういう旅のほうが面白かったりするよ","en":"Trips without a fixed highlight can be interesting."},{"ja":"日帰りですか？","en":"Is it a day trip？"},{"ja":"日本からだとかなり長旅ですよね？","en":"It's quite a long trip from Japan, right？"},{"ja":"年齢かな","en":"Maybe it's age."},{"ja":"普段はパソコンの前にいることが多いですね","en":"I usually spend a lot of time in front of a computer."},{"ja":"部屋が少し寒いのですが","en":"The room is a bit cold."},{"ja":"別に","en":"Not much."},{"ja":"本気？","en":"Seriously?"},{"ja":"本日のおすすめはアップルケーキとカプチーノです","en":"Today's recommendation is apple cake and cappuccino."},{"ja":"無理に頑張るより、生活リズムを安定させるほうに意識が向いてる","en":"I focus more on stabilizing my routine."},{"ja":"無理やり決めたって言うけど、なんか縁があったんじゃない？","en":"You say forced, but maybe it's fate."},{"ja":"名前は〇〇です","en":"My name is 〇〇."},{"ja":"明後日またお待ちしております","en":"We look forward to seeing you again the day after tomorrow."},{"ja":"明後日またこちらに泊まります","en":"I will stay here again the day after tomorrow."},{"ja":"明日はデッサウに行く予定です","en":"I'm planning to go to Dessau tomorrow."},{"ja":"明日はもう観光に出かける予定ですか？","en":"Are you going sightseeing tomorrow？"},{"ja":"有名ですからね","en":"It's famous."},{"ja":"理由をうまく説明できなくても好きって続いてるものって本物だよね","en":"Things you keep liking even without clear reasons are real."},{"ja":"旅先だと、なぜか少し覚えられるだけです","en":"For some reason, I remember things a bit better when traveling."},{"ja":"旅先でこうやってゆっくり話せるのって、なんだか特別ですよね","en":"It feels special to talk slowly like this while traveling."},{"ja":"良い一日をお過ごしください","en":"Have a nice day."},{"ja":"良い夢を","en":"Sweet dreams."},{"ja":"領収書は不要です","en":"I don't need a receipt."},{"ja":"領収書は不要とのこと、承知しました","en":"Understood, no receipt needed."},{"ja":"歴史って、現地で見ると急にリアルになりますよね","en":"History suddenly feels real when you see it on site."},{"ja":"歴史の象徴みたいですよね","en":"It's like a symbol of history."}];
 
@@ -712,6 +794,125 @@ function escapeHtml(str) {
   const d = document.createElement('div');
   d.textContent = str;
   return d.innerHTML;
+}
+
+// --- Import: Load saved imported data from localStorage ---
+const STORAGE_KEY_IMPORT = 'engpractice_imported';
+function loadImportedData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_IMPORT);
+    if (raw) {
+      const imported = JSON.parse(raw);
+      imported.forEach(item => {
+        const exists = DATA.some(d => d.en === item.en && d.ja === item.ja);
+        if (!exists) DATA.push(item);
+      });
+    }
+  } catch {}
+}
+function saveImportedData() {
+  // Save only the items that were imported (not in the original hardcoded set)
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_IMPORT);
+    const existing = raw ? JSON.parse(raw) : [];
+    localStorage.setItem(STORAGE_KEY_IMPORT, JSON.stringify(existing));
+  } catch {}
+}
+loadImportedData();
+
+function onImportFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const resultDiv = document.getElementById('importResult');
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  if (ext === 'xlsx' || ext === 'xls') {
+    // Excel file
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        if (typeof XLSX === 'undefined') {
+          showImportResult(resultDiv, 'error', 'Excelライブラリの読み込みに失敗しました。ネット接続を確認してください。');
+          return;
+        }
+        const wb = XLSX.read(ev.target.result, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        if (rows.length < 2) {
+          showImportResult(resultDiv, 'error', '2行以上のデータが必要です（1行目:英語、2行目:日本語）。');
+          return;
+        }
+        const enRow = rows[0];
+        const jaRow = rows[1];
+        processImport(enRow, jaRow, resultDiv);
+      } catch (err) {
+        showImportResult(resultDiv, 'error', 'Excelファイルの読み込みに失敗しました: ' + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    // Text file (tab-separated)
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        const text = ev.target.result;
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
+        if (lines.length < 2) {
+          showImportResult(resultDiv, 'error', '2行以上のデータが必要です（1行目:英語、2行目:日本語）。');
+          return;
+        }
+        const enRow = lines[0].split('\t');
+        const jaRow = lines[1].split('\t');
+        processImport(enRow, jaRow, resultDiv);
+      } catch (err) {
+        showImportResult(resultDiv, 'error', 'ファイルの読み込みに失敗しました: ' + err.message);
+      }
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+  // Reset file input so the same file can be re-selected
+  e.target.value = '';
+}
+
+function processImport(enRow, jaRow, resultDiv) {
+  const pairs = [];
+  const len = Math.min(enRow.length, jaRow.length);
+  let skipped = 0;
+  for (let i = 0; i < len; i++) {
+    const en = String(enRow[i] || '').trim();
+    const ja = String(jaRow[i] || '').trim();
+    if (!en || !ja) continue;
+    const exists = DATA.some(d => d.en === en && d.ja === ja);
+    if (exists) {
+      skipped++;
+      continue;
+    }
+    pairs.push({ en, ja });
+  }
+  if (pairs.length === 0) {
+    const msg = skipped > 0
+      ? `すべて既存のフレーズと重複しています（${skipped}件スキップ）。`
+      : '有効なデータが見つかりませんでした。';
+    showImportResult(resultDiv, 'error', msg);
+    return;
+  }
+  // Add to DATA and save
+  pairs.forEach(p => DATA.push(p));
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_IMPORT);
+    const existing = raw ? JSON.parse(raw) : [];
+    pairs.forEach(p => existing.push(p));
+    localStorage.setItem(STORAGE_KEY_IMPORT, JSON.stringify(existing));
+  } catch {}
+  let msg = `${pairs.length}件のフレーズを追加しました。`;
+  if (skipped > 0) msg += `（重複${skipped}件スキップ）`;
+  showImportResult(resultDiv, 'success', msg);
+  updateStats();
+}
+
+function showImportResult(el, type, msg) {
+  el.className = 'import-result ' + type;
+  el.textContent = msg;
 }
 
 // Start
