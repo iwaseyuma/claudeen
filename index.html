@@ -445,6 +445,43 @@ const DATA = [{"ja":"両方ちょっと","en":"A bit of both."},{"ja":"～しな
 // Add lang property to existing data (all English)
 DATA.forEach(item => { if (!item.lang) item.lang = 'en'; });
 
+// German phrases
+[
+{"en":"Guten Tag","ja":"こんにちは"},
+{"en":"Entschuldigung","ja":"すみません"},
+{"en":"Sprechen Sie Englisch?","ja":"英語を話せますか？"},
+{"en":"Ich möchte einchecken","ja":"チェックインをお願いします"},
+{"en":"Ich habe über Booking.com reserviert","ja":"booking.comで予約しました"},
+{"en":"Mein Name ist yuma","ja":"名前はyumaです"},
+{"en":"Hier ist mein Pass","ja":"パスポートです"},
+{"en":"Wann ist das Frühstück?","ja":"朝食は何時ですか？"},
+{"en":"Wo ist mein Zimmer?","ja":"部屋はどこですか？"},
+{"en":"Ich möchte nach ～ gehen","ja":"～に行きたいんですが"},
+{"en":"Ich möchte zum Bahnhof gehen","ja":"駅に行きたいんですが"},
+{"en":"Ich möchte zum Bauhaus gehen","ja":"バウハウスに行きたいんですが"},
+{"en":"Bitte helfen Sie mir","ja":"助けてください"},
+{"en":"Ich habe ein Problem","ja":"困っています"},
+{"en":"Ich habe mich verlaufen","ja":"道に迷いました"},
+{"en":"Bitte langsam","ja":"ゆっくり話してください"},
+{"en":"Ich verstehe nicht","ja":"分かりません"},
+{"en":"Noch einmal, bitte","ja":"もう一度お願いします"},
+{"en":"Wo ist die Toilette?","ja":"トイレはどこですか？"},
+{"en":"Gibt es hier eine Toilette?","ja":"ここにトイレはありますか？"},
+{"en":"Ich mag Berlin sehr","ja":"ベルリンがとても好きです"},
+{"en":"Berlin ist eine interessante Stadt","ja":"ベルリンは面白い街ですね"},
+{"en":"Die Atmosphäre ist schön","ja":"雰囲気がいいですね"},
+{"en":"Deutsches Essen ist fantastisch","ja":"ドイツの食べ物は最高ですね"},
+{"en":"Deutsches Bier ist fantastisch","ja":"ドイツのビールは最高ですね"},
+{"en":"Ich mag das Bauhaus","ja":"バウハウスが好きなんです"},
+{"en":"Ich interessiere mich für Design","ja":"デザインに興味があります"},
+{"en":"Sie sind sehr freundlich","ja":"とても親切ですね"},
+{"en":"Bitte","ja":"お願いします"},
+{"en":"Danke schön","ja":"ありがとうございます"},
+{"en":"Vielen Dank","ja":"本当にありがとうございます"},
+{"en":"Schönen Tag noch","ja":"良い一日を"},
+{"en":"Auf Wiedersehen","ja":"さようなら"}
+].forEach(item => { item.lang = 'de'; DATA.push(item); });
+
 const STORAGE_KEY = 'engpractice_memorized';
 const STORAGE_KEY_REV = 'engpractice_reversed';
 const STORAGE_KEY_LANG = 'engpractice_currentLang';
