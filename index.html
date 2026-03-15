@@ -88,14 +88,14 @@
     opacity: 0.5;
     cursor: default;
   }
-  .en-box {
+  .target-box {
     border-left: 5px solid #27ae60;
     min-height: 80px;
     display: flex;
     align-items: center;
     animation: fadeIn 0.3s ease;
   }
-  .en-box .text {
+  .target-box .text {
     font-size: 18px;
     line-height: 1.6;
     font-weight: 500;
@@ -404,7 +404,7 @@
 
 <div class="translate-section">
   <h2>翻訳と例文</h2>
-  <input type="text" class="translate-input" id="translateInput" placeholder="英語の表現や単語を入力" onkeydown="onTranslateKeydown(event)">
+  <input type="text" class="translate-input" id="translateInput" placeholder="表現や単語を入力" onkeydown="onTranslateKeydown(event)">
   <button class="translate-btn" id="translateBtn" onclick="onTranslate()">翻訳と例文</button>
   <div class="translate-result" id="translateResult"></div>
 </div>
@@ -589,12 +589,12 @@ function render() {
   const targetText = getTargetText(item);
   const questionText = reverseMode ? targetText : item.ja;
   const answerText = reverseMode ? item.ja : targetText;
-  const questionClass = reverseMode ? 'en-box' : 'ja-box';
-  const answerClass = reverseMode ? 'ja-box' : 'en-box';
+  const questionClass = reverseMode ? 'target-box' : 'ja-box';
+  const answerClass = reverseMode ? 'ja-box' : 'target-box';
   let html = '';
 
   // Question box (with long-press copy if English)
-  if (questionClass === 'en-box') {
+  if (questionClass === 'target-box') {
     html += `<div class="box ${questionClass}" id="enQuestion"
       ontouchstart="onEnTouchStart(event)" ontouchend="onEnTouchEnd(event)" ontouchcancel="onEnTouchEnd(event)"
       onmousedown="onEnTouchStart(event)" onmouseup="onEnTouchEnd(event)">
@@ -624,7 +624,7 @@ function render() {
 
   // Answer box (with long-press copy for target language text)
   if (answerShown) {
-    if (answerClass === 'en-box') {
+    if (answerClass === 'target-box') {
       html += `<div class="box ${answerClass}" id="enAnswer"
         ontouchstart="onEnTouchStart(event)" ontouchend="onEnTouchEnd(event)" ontouchcancel="onEnTouchEnd(event)"
         onmousedown="onEnTouchStart(event)" onmouseup="onEnTouchEnd(event)">
